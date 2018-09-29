@@ -6,15 +6,7 @@ var jar = request.jar();
 request = request.defaults({
   jar: jar
 });
-const Sequelize = require('sequelize');
-const {
-  and
-} = Sequelize.Op;
-var {
-  Subject,
-  TimeStudy,
-  Place
-} = require('./database')
+
 var cheerio = require('cheerio');
 var options = {
   method: 'POST',
@@ -41,99 +33,109 @@ var options = {
     hidTrainingSystemId: ''
   }
 };
-request.get('http://115.146.127.72/CMCSoft.IU.Web.Info/Login.aspx')
-  .then(() => request(options))
-  .then(() => request('http://115.146.127.72/CMCSoft.IU.Web.Info/Reports/Form/StudentTimeTable.aspx'))
-  .then(
-    body => {
-      var $ = cheerio.load(body);
-      var domSelector = $('table#gridRegistered > tbody > tr');
-      var listItem = domSelector.slice(1, domSelector.length - 1);
-      listItem.each((index, element) => {
-        let Node_td = $(element).children('td')
+module.exports = (username, pass) => {
+  options.formData.txtUserName = username.trim()
+  options.formData.txtPassword = pass;
+  return request.get('http://115.146.127.72/CMCSoft.IU.Web.Info/Login.aspx')
+    .then(() => request({ ...options}))
+    .then(() => request('http://115.146.127.72/CMCSoft.IU.Web.Info/Reports/Form/StudentTimeTable.aspx'))
+    .then(
+      body => {
+        var $ = cheerio.load(body);
+        var domSelector = $('table#gridRegistered > tbody > tr');
+        var listItem = domSelector.slice(1, domSelector.length - 1);
+        var mangTime = new Array();
+        var mangPlace = new Array();
+        var mangSubject = new Array()
+        listItem.each((index, element) => {
+          let Node_td = $(element).children('td')
 
-        let lopHocPhan = $(Node_td[1])
-          .text()
-          .trim();
-        let HocPhan = $(Node_td[2])
-          .text()
-          .trim();
-        let ThoiGian = $(Node_td[3])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '')
-        let DiaDiem = $(Node_td[4])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '');
-        let GiangVien = $(Node_td[5])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '');
-        let SiSo = $(Node_td[6])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '');
-        let SoDK = $(Node_td[7])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '');
-        let SoTC = $(Node_td[8])
-          .text()
-          .trim()
-          .replace(/\s\s+/, '');
+          let lopHocPhan = $(Node_td[1])
+            .text()
+            .trim();
+          let HocPhan = $(Node_td[2])
+            .text()
+            .trim();
+          let ThoiGian = $(Node_td[3])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '')
+          let DiaDiem = $(Node_td[4])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '');
+          let GiangVien = $(Node_td[5])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '');
+          let SiSo = $(Node_td[6])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '');
+          let SoDK = $(Node_td[7])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '');
+          let SoTC = $(Node_td[8])
+            .text()
+            .trim()
+            .replace(/\s\s+/, '');
 
 
-        Subject.findOrCreate({
-          where: {
-            hocphan: HocPhan
-          },
-          defaults: {
+          mangSubject.push({
             lophocphan: lopHocPhan,
+            hocphan: HocPhan,
             siso: parseInt(SiSo) || 0,
             sodk: parseInt(SoDK) || 0,
             sotc: parseInt(SoTC) || 0,
             giangvien: GiangVien
-          }
-        })
-        tachDiaDiem(DiaDiem).forEach(place => {
+          })
 
-          place.code = HocPhan + '_' + place.code
-          Place.findOrCreate({
-            where: {
-              [and]: {
-                code: place.code
-              }
-            },
-            defaults: {
-              ...place
-            }
-          }).then((e) =>e,(e) =>console.log('Loi place:',e))
-        })
+          tachDiaDiem(DiaDiem).forEach(place => {
 
-        tachThoiGian(ThoiGian).forEach(time => {
-          time.code = HocPhan + '_' + time.code
-          time.hocphan = HocPhan;
-          TimeStudy.findOrCreate({
-            where: {
-              [and]: {
-                code: time.code,
-                date: time.date
-              }
-            },
-            defaults: {
+            place.code = HocPhan + '_' + place.code
+            // Place.findOrCreate({
+            //   where: {
+            //     [and]: {
+            //       code: place.code
+            //     }
+            //   },
+            //   defaults: {
+            //     ...place
+            //   }
+            // })
+
+            mangPlace.push({ ...place
+            })
+          })
+
+          tachThoiGian(ThoiGian).forEach(time => {
+            time.code = HocPhan + '_' + time.code
+            time.hocphan = HocPhan;
+            // TimeStudy.findOrCreate({
+            //   where: {
+            //     [and]: {
+            //       code: time.code,
+            //       date: time.date
+            //     }
+            //   },
+            //   defaults: {
+            //     ...time
+            //   }
+            // })
+            mangTime.push({
               ...time
-            }
-          }).then((e) =>e,(e) =>console.log('Loi time:',e))
+            })
+          })
         })
-
-        console.log('-------------------------------------')
-
-      })
-    }
-  )
-  .catch(e => console.log(e + ''))
-
+        return {
+          time: mangTime,
+          place: mangPlace,
+          subject: mangSubject
+        }
+      }
+    )
+}
 
 function tachThoiGian(thoiGian) {
   let mangThoiGian = new Array();
