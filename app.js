@@ -4,7 +4,7 @@ let cralw = require('./cralw')
 let app = express();
 app.use(express.static('public'));
 
-const PORT = process.env.port || 80;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server listening in port ${PORT}`);
 })
