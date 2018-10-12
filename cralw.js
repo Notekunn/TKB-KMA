@@ -20,14 +20,14 @@ var options = {
     __EVENTTARGET: '',
     __EVENTARGUMENT: '',
     __LASTFOCUS: '',
-    __VIEWSTATE: `/wEPDwUKMTkwNDg4MTQ5MQ9kFgICAQ9kFgpmD2QWCgIBDw8WAh4EVGV4dAUjSOG7jEMgVknhu4ZOIEvhu7ggVEhV4bqsVCBN4bqsVCBNw4NkZAICD2QWAmYPDxYEHwAFDcSQxINuZyBuaOG6rXAeEENhdXNlc1ZhbGlkYXRpb25oZGQCAw8QDxYGHg1EYXRhVGV4dEZpZWxkBQZreWhpZXUeDkRhdGFWYWx1ZUZpZWxkBQJJRB4LXyFEYXRhQm91bmRnZBAVAgJWTgJFThUCIEU0MzI5NkM2RjI0QzQ0MTBBODk0RjQ2RDU3RDJEM0FCIEFCQUY0NkJENjcxMjQ3QzVCNUI1Mjg4NUJCMkY5QzQ5FCsDAmdnFgFmZAIEDw8WAh4ISW1hZ2VVcmwFKC9DTUNTb2Z0LklVLldlYi5JbmZvL0ltYWdlcy9Vc2VySW5mby5naWZkZAIFD2QWBgIBDw8WAh8ABQZLaMOhY2hkZAIDDw8WAh8AZWRkAgcPDxYCHgdWaXNpYmxlaGRkAgIPZBYEAgMPD2QWAh4Gb25ibHVyBQptZDUodGhpcyk7ZAIHDw8WAh8AZWRkAgQPDxYCHwZoZGQCBg8PFgIfBmhkFgYCAQ8PZBYCHwcFCm1kNSh0aGlzKTtkAgUPD2QWAh8HBQptZDUodGhpcyk7ZAIJDw9kFgIfBwUKbWQ1KHRoaXMpO2QCCw9kFghmDw8WAh8AZWRkAgEPZBYCZg8PFgIfAWhkZAICD2QWAmYPDxYEHwAFDcSQxINuZyBuaOG6rXAfAWhkZAIDDw8WAh8ABbQFPGEgaHJlZj0iIyIgb25jbGljaz0iamF2YXNjcmlwdDp3aW5kb3cucHJpbnQoKSI+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdCI+CTxpbWcgc3JjPSIvQ01DU29mdC5JVS5XZWIuSW5mby9pbWFnZXMvcHJpbnQucG5nIiBib3JkZXI9IjAiPjwvZGl2PjxkaXYgc3R5bGU9IkZMT0FUOmxlZnQ7UEFERElORy1UT1A6NnB4Ij5JbiB0cmFuZyBuw6B5PC9kaXY+PC9hPjxhIGhyZWY9Im1haWx0bzo/c3ViamVjdD1IZSB0aG9uZyB0aG9uZyB0aW4gSVUmYW1wO2JvZHk9aHR0cDovLzExNS4xNDYuMTI3LjcyL0NNQ1NvZnQuSVUuV2ViLkluZm8vTG9naW4uYXNweCI+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdCI+PGltZyBzcmM9Ii9DTUNTb2Z0LklVLldlYi5JbmZvL2ltYWdlcy9zZW5kZW1haWwucG5nIiAgYm9yZGVyPSIwIj48L2Rpdj48ZGl2IHN0eWxlPSJGTE9BVDpsZWZ0O1BBRERJTkctVE9QOjZweCI+R+G7rWkgZW1haWwgdHJhbmcgbsOgeTwvZGl2PjwvYT48YSBocmVmPSIjIiBvbmNsaWNrPSJqYXZhc2NyaXB0OmFkZGZhdigpIj48ZGl2IHN0eWxlPSJGTE9BVDpsZWZ0Ij48aW1nIHNyYz0iL0NNQ1NvZnQuSVUuV2ViLkluZm8vaW1hZ2VzL2FkZHRvZmF2b3JpdGVzLnBuZyIgIGJvcmRlcj0iMCI+PC9kaXY+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdDtQQURESU5HLVRPUDo2cHgiPlRow6ptIHbDoG8gxrBhIHRow61jaDwvZGl2PjwvYT5kZGSm5zBT6E9FhVX2Fsk0TRTn9HsrxRwy8HBnwkYkzMGnjg==`,
-    __VIEWSTATEGENERATOR: 'D620498B',
-    'PageHeader1$drpNgonNgu': 'E43296C6F24C4410A894F46D57D2D3AB',
-    'PageHeader1$hidisNotify': '0',
-    'PageHeader1$hidValueNotify': '.',
+    __VIEWSTATE: '',
+    __VIEWSTATEGENERATOR: '',
+    'PageHeader1$drpNgonNgu': '',
+    'PageHeader1$hidisNotify': '',
+    'PageHeader1$hidValueNotify': '',
     txtUserName: '',
     txtPassword: '',
-    btnSubmit: 'Đăng nhập',
+    btnSubmit: '',
     hidUserId: '',
     hidUserFullName: '',
     hidTrainingSystemId: ''
@@ -36,11 +36,21 @@ var options = {
 module.exports = (username, pass) => {
   options.formData.txtUserName = username.trim()
   options.formData.txtPassword = pass;
-  return request.get('http://115.146.127.72/CMCSoft.IU.Web.Info/Login.aspx')
-    .then(() => request({ ...options}))
+  return request.get('http://115.146.127.72/CMCSoft.IU.Web.Info/Login.aspx').then((body) => {
+    var $ = cheerio.load(body);
+    // options.formData.__VIEWSTATE = $('input[name="__VIEWSTATE"]').attr('value')
+    // options.formData.__VIEWSTATEGENERATOR = 
+    for (props in options.formData) {
+      if (props != 'txtUserName' && props != 'txtPassword') options.formData[props] = $(`input[name="${props}"]`).attr('value')
+    }
+
+    return options
+  })
+    .then((options) => request({ ...options }))
     .then(() => request('http://115.146.127.72/CMCSoft.IU.Web.Info/Reports/Form/StudentTimeTable.aspx'))
     .then(
       body => {
+        // console.log(body)
         var $ = cheerio.load(body);
         var domSelector = $('table#gridRegistered > tbody > tr');
         var listItem = domSelector.slice(1, domSelector.length - 1);
@@ -105,7 +115,8 @@ module.exports = (username, pass) => {
             //   }
             // })
 
-            mangPlace.push({ ...place
+            mangPlace.push({
+              ...place
             })
           })
 
@@ -212,8 +223,8 @@ function tachDiaDiem(diaDiem) {
     let regexp2 = new RegExp('\\(' + listTiet.join('\\)|\\(') + '\\)', 'g');
     listDiaDiem =
       diaDiem
-      .split(regexp2)
-      .filter(e => e.trim().length > 0);
+        .split(regexp2)
+        .filter(e => e.trim().length > 0);
     listDiaDiem.forEach((element, index) => {
       listTiet[index].split(',').forEach(e => {
         mangDiaDiem.push(new DiaDiemHocPhan(e, element))
